@@ -1,0 +1,26 @@
+name: Testing
+on: [push, pull_request]
+jobs:
+  name: Go test
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        go-version: 1.22
+    - name: go get & test
+      run: |
+        go get -v -t -d ./...
+        go test -v ./...
+
+    - name: generate coverage report
+      run: sh ./.github/scripts/coverage.sh
+      shell: bash
+
+    - name: Upload coverage to codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.out
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
