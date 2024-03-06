@@ -17,6 +17,9 @@ const (
 	UnknownFrame      = 255
 
 	DefaultMaxPayloadBytes = 32 << 20 // 32MB
+
+	maxHeaderLengthWithPreambule = 18
+	minHeaderLengthWithPreambule = 6
 )
 
 var (
@@ -177,8 +180,11 @@ type tcpFrameWriter struct {
 	header *tcpFrameHeader
 }
 
+// For io.WriterCloser interface
 func (frame *tcpFrameWriter) Close() error { return nil }
 
+// Writer msg to connection and return amount of bytes was
+// written + len(preambule) + len(header) and error
 func (frame *tcpFrameWriter) Write(msg []byte) (int, error) {
 	var (
 		b      byte
@@ -241,16 +247,18 @@ func (frame *tcpFrameWriter) Write(msg []byte) (int, error) {
 		_, _ = frame.writer.Write(header)
 		_, _ = frame.writer.Write(data)
 		err = frame.writer.Flush()
-		return 4 + len(header) + len(msg), err
+		return len(preambule) + len(header) + len(msg), err
 	}
 
 	_, _ = frame.writer.Write(preambule)
 	_, _ = frame.writer.Write(header)
 	_, _ = frame.writer.Write(msg)
 	err = frame.writer.Flush()
-	return 4 + len(header) + len(msg), err
+	return len(preambule) + len(header) + len(msg), err
 }
 
+// tcpFrameWriterFactory creates writer for a frame
+// if needMaskingKey is true, a payload will masking
 type tcpFrameWriterFactory struct {
 	*bufio.Writer
 	needMaskingKey bool
@@ -296,6 +304,36 @@ func (handler *tcpFrameHandler) WriteClose(writerFactory frameWriterFactory, sta
 	return err
 }
 
+// create new tcp frame connection from rwc interface
+// rwc - readWriteCloser interface
+// if buf - nil create new bufio readWriter from rwc
+// handler - handles frame header and close connection
+// maxPayloadBytes - max size of the message
+func newTCPWSConnection(
+	rwc io.ReadWriteCloser,
+	buf *bufio.ReadWriter,
+	handler frameHandler,
+	maxPayloadBytes int,
+) *Conn {
+	if buf == nil {
+		br := bufio.NewReader(rwc)
+		bw := bufio.NewWriter(rwc)
+		buf = bufio.NewReadWriter(br, bw)
+	}
+
+	conn := &Conn{
+		buf:                buf,
+		rwc:                rwc,
+		frameReaderFactory: &tcpFrameReaderFactory{Reader: buf.Reader},
+		frameWriterFactory: &tcpFrameWriterFactory{Writer: buf.Writer},
+		frameHandler:       handler,
+		defaultCloseStatus: closeStatusNormal,
+		MaxPayloadBytes:    maxPayloadBytes,
+	}
+	return conn
+}
+
+// Generate 4 byte masking key for a frame
 func generateMaskingKey() ([]byte, error) {
 	maskingKey := make([]byte, 4)
 	_, err := rand.Read(maskingKey)
