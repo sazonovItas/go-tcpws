@@ -309,7 +309,7 @@ func (handler *tcpFrameHandler) WriteClose(writerFactory frameWriterFactory, sta
 // if buf - nil create new bufio readWriter from rwc
 // handler - handles frame header and close connection
 // maxPayloadBytes - max size of the message
-func newTCPWSConnection(
+func NewFrameConnection(
 	rwc io.ReadWriteCloser,
 	buf *bufio.ReadWriter,
 	handler frameHandler,
