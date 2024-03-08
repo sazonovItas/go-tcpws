@@ -188,8 +188,6 @@ func (conn *Conn) Write(msg []byte) (int, error) {
 	return n, err
 }
 
-var errSetDeadline = errors.New("conn: cannot set deadline: not using new.Conn")
-
 // Close implements io.Closer interface
 // send close frame and close rwc
 func (conn *Conn) Close() error {
@@ -201,6 +199,26 @@ func (conn *Conn) Close() error {
 
 	return err1
 }
+
+// LocalAddr return local address, if known
+func (conn *Conn) LocalAddr() net.Addr {
+	if c, ok := conn.rwc.(net.Conn); ok {
+		return c.LocalAddr()
+	}
+
+	return nil
+}
+
+// RemoteAddr return remote address, if known
+func (conn *Conn) RemoteAddr() net.Addr {
+	if c, ok := conn.rwc.(net.Conn); ok {
+		return c.RemoteAddr()
+	}
+
+	return nil
+}
+
+var errSetDeadline = errors.New("conn: cannot set deadline: not using new.Conn")
 
 // SetDeadline sets connection's read & write deadline
 func (conn *Conn) SetDeadline(t time.Time) error {
