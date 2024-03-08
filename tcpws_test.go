@@ -26,9 +26,7 @@ func TestConnReadWriteClose(t *testing.T) {
 		Buffer: bytes.NewBuffer(frameBuffer),
 	}
 
-	handler := &tcpFrameHandler{
-		payloadType: TextFrame,
-	}
+	handler := &tcpFrameHandler{}
 	conn := NewFrameConnection(connBuffer, nil, handler, 0)
 
 	i := 0
@@ -108,9 +106,7 @@ func TestConnReadFrame(t *testing.T) {
 		Buffer: bytes.NewBuffer(frameBuffer),
 	}
 
-	handler := &tcpFrameHandler{
-		payloadType: TextFrame,
-	}
+	handler := &tcpFrameHandler{}
 	conn := NewFrameConnection(connBuffer, nil, handler, 0)
 
 	i := 0
@@ -171,9 +167,7 @@ func TestSetDeadline(t *testing.T) {
 		Buffer: bytes.NewBuffer(frameBuffer),
 	}
 
-	handler := &tcpFrameHandler{
-		payloadType: TextFrame,
-	}
+	handler := &tcpFrameHandler{}
 	conn := NewFrameConnection(connBuffer, nil, handler, 0)
 
 	t.Run("check set deadline for connection", func(t *testing.T) {
