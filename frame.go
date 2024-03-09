@@ -331,7 +331,10 @@ func NewFrameConnection(
 		buf:                buf,
 		rwc:                rwc,
 		frameReaderFactory: &tcpFrameReaderFactory{Reader: buf.Reader},
-		frameWriterFactory: &tcpFrameWriterFactory{Writer: buf.Writer},
+		frameWriterFactory: &tcpFrameWriterFactory{
+			Writer:         buf.Writer,
+			needMaskingKey: needMaskingKey,
+		},
 		frameHandler:       handler,
 		defaultCloseStatus: closeStatusNormal,
 		MaxPayloadBytes:    maxPayloadBytes,
