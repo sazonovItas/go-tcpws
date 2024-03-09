@@ -22,7 +22,7 @@ func main() {
 	}
 	log.Println("new connection on addr:", c.RemoteAddr())
 
-	conn := gotcpws.NewFrameConnection(c, nil, nil, 0)
+	conn := gotcpws.NewFrameConnection(c, nil, nil, 0, false)
 	defer conn.Close()
 
 	rd := bufio.NewReader(os.Stdout)

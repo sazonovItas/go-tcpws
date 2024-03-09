@@ -309,11 +309,13 @@ func (handler *tcpFrameHandler) WriteClose(writerFactory frameWriterFactory, sta
 // if buf - nil create new bufio readWriter from rwc
 // handler - handles frame header and close connection, if nil will use tcpFrameHandler
 // maxPayloadBytes - max size of the message, if 0 will use DefaultMaxPayloadBytes
+// needMaskingKey - specifies mask of the payload
 func NewFrameConnection(
 	rwc io.ReadWriteCloser,
 	buf *bufio.ReadWriter,
 	handler frameHandler,
 	maxPayloadBytes int,
+	needMaskingKey bool,
 ) *Conn {
 	if buf == nil {
 		br := bufio.NewReader(rwc)

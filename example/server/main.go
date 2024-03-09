@@ -35,14 +35,15 @@ func ListenAndServe(ln net.Listener) error {
 		}
 
 		log.Println("New connection on address:", c.RemoteAddr())
-		conn := gotcpws.NewFrameConnection(c, nil, nil, 0)
-		go Serve(conn)
+		conn := gotcpws.NewFrameConnection(c, nil, nil, 0, false)
+		go func() {
+			defer conn.Close()
+			Serve(conn)
+		}()
 	}
 }
 
 func Serve(conn *gotcpws.Conn) {
-	defer conn.Close()
-
 	var err error
 	var msg []byte
 	for {
