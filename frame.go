@@ -337,6 +337,7 @@ func NewFrameConnection(
 		},
 		frameHandler:       handler,
 		defaultCloseStatus: closeStatusNormal,
+		PayloadType:        TextFrame,
 		MaxPayloadBytes:    maxPayloadBytes,
 	}
 	return conn
